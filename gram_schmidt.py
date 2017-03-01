@@ -22,3 +22,5 @@ def gs(X):
             temp_vec = temp_vec - proj_vec
         Y.append(temp_vec)
     return Y
+
+
