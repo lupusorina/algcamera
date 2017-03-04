@@ -4,259 +4,222 @@ import matrix_utils as mx_ut
 import util_plot as plt_ut
 import camera as cam
 import matplotlib.pyplot as plt
-from numpy.linalg import inv
 plt.switch_backend('WebAgg')
 
 # PARAMETERS OF THE ENVIRONMENT (EXTRINSIC)
 # Position of the camera relative
 # to the centre (inertial frame) in the axis of the inertial frame
-dx_cam = -24  # cm
-dy_cam = 0 # cm
-dz_cam = 30 # cm
-
-angle_camera = 30 # degrees
-scale = 10
+dx_cam = -24        # cm
+dy_cam = 0          # cm
+dz_cam = 30         # cm
+angle_camera = 45   # degrees (measured relative to XoY plane)
+scale = 6
+sphere_radius = 10  # cm
 
 
 def Point(x, y, z):
     return np.array([x, y, z, 1])
 
+
 def Vector(x, y, z):
     return np.array([x, y, z, 0])
 
 
-##### PLOTTINGS
+# PLOTTINGS
 def plot_plane(point, normal_vector):
-    x = np.linspace(P0_world[0] - 5, P0_world[0] + 5, 10)
-    y = np.linspace(P0_world[1] - 5, P0_world[1] + 5, 10)
-    X,Y = np.meshgrid(x,y)
+    x = np.linspace(point[0] - 5, point[0] + 5, 10)
+    y = np.linspace(point[1] - 5, point[1] + 5, 10)
+    X, Y = np.meshgrid(x, y)
     d = point.dot(normal_vector)
     Z = (-normal_vector[0] * x - normal_vector[1] * y + d) / normal_vector[2]
-
-    ax.plot_surface(X, Y, Z,
-                    rstride=1, cstride=1, alpha=0,
-                    linewidth=0.5, edgecolors='r')
+    ax.plot_surface(X, Y, Z, linewidth=0.5, edgecolors='r', alpha=0)
 
 
-def plot_vector(v, origin=[0,0,0], style=plt_ut.arr_prop_red):
+def plot_vector(v, origin=[0, 0, 0], style=plt_ut.arr_red):
     arrow = plt_ut.Arrow3D([origin[0], origin[0] + v[0]],
-                             [origin[1], origin[1] + v[1]],
-                             [origin[2], origin[2] + v[2]],
-                             **style)
+                           [origin[1], origin[1] + v[1]],
+                           [origin[2], origin[2] + v[2]], **style)
     ax.add_artist(arrow)
 
 
-def plot_frames(ax):
-    plot_vector(e1_inertial, origin_inertial, plt_ut.arr_prop_red)
-    plot_vector(e2_inertial, origin_inertial, plt_ut.arr_prop_green)
-    plot_vector(e3_inertial, origin_inertial, plt_ut.arr_prop_blue)
-    camera_e1_inertial = transform_inertial_to_camera(camera_e1_camera)
-    camera_e2_inertial = transform_inertial_to_camera(camera_e2_camera)
-    camera_e3_inertial = transform_inertial_to_camera(camera_e3_camera)
-    camera_origin_inertial = transform_inertial_to_camera(camera_origin_camera)
-    plot_vector(camera_e1_inertial, camera_origin_inertial, plt_ut.arr_prop_red)
-    plot_vector(camera_e2_inertial, camera_origin_inertial, plt_ut.arr_prop_green)
-    plot_vector(camera_e3_inertial, camera_origin_inertial, plt_ut.arr_prop_blue)
+def plot_frames(ax, frame_inertial, frame_camera):
+    plot_vector(frame_inertial[0], frame_inertial[3], plt_ut.arr_red)
+    plot_vector(frame_inertial[1], frame_inertial[3], plt_ut.arr_green)
+    plot_vector(frame_inertial[2], frame_inertial[3], plt_ut.arr_blue)
+
+    camera_e1_inertial = transform_camera_to_inertial(frame_camera[0])
+    camera_e2_inertial = transform_camera_to_inertial(frame_camera[1])
+    camera_e3_inertial = transform_camera_to_inertial(frame_camera[2])
+    camera_orig_inertial = transform_camera_to_inertial(frame_camera[3])
+
+    plot_vector(camera_e1_inertial, camera_orig_inertial, plt_ut.arr_red)
+    plot_vector(camera_e2_inertial, camera_orig_inertial, plt_ut.arr_green)
+    plot_vector(camera_e3_inertial, camera_orig_inertial, plt_ut.arr_blue)
 
 
-#### Transformations
+# Transformations
 def rot_mx_camera_to_inertial(angle_camera):
+    # Active transformations
     # steps of rotations that move the inertial frame into the camera frame
     # -> rotation transforms a vector in the camera frame to
     #    a vector in the inertial frame
     # Convention of Rotation: 1) z-axis 2) x-axis 3) y axis
     rot_z_angle = 180  # degrees
     rot_matrix_z = mx_ut.rotation_z(rot_z_angle)
-    rot_y_angle = (90 + angle_camera)  # degrees
+    rot_y_angle = 90 + angle_camera  # degrees
     rot_matrix_y = mx_ut.rotation_y(rot_y_angle)
-    rot_matrix = mx_ut.matrix_matrix_multipl(rot_matrix_y, rot_matrix_z)
-    return rot_matrix
+    return mx_ut.matrix_matrix_multipl(rot_matrix_y, rot_matrix_z)
+
 
 def translation_mx_camera_to_inertial(dx, dy, dz):
-    translation_matrix = np.array([[1, 0, 0, dx],
-                                   [0, 1, 0, dy],
-                                   [0, 0, 1, dz],
-                                   [0, 0, 0, 1]])
-    return translation_matrix
+    return np.array([[1, 0, 0, dx],
+                     [0, 1, 0, dy],
+                     [0, 0, 1, dz],
+                     [0, 0, 0, 1]])
+
 
 def rot_and_translation_mx_camera_to_inertial(angle_camera):
-    transform_matrix = mx_ut.matrix_matrix_multipl(translation_mx_camera_to_inertial(dx_cam, dy_cam, dz_cam),
-                                   rot_mx_camera_to_inertial(angle_camera))
-    return transform_matrix
+    return mx_ut.matrix_matrix_multipl(
+                 translation_mx_camera_to_inertial(dx_cam, dy_cam, dz_cam),
+                 rot_mx_camera_to_inertial(angle_camera))
 
 
-def transform_camera_to_inertial(camera):
-    inv_matrix_camera_inertial = mx_ut.inverse_matrix(rot_and_translation_mx_camera_to_inertial(angle_camera))
+def transform_inertial_to_camera(camera):
+    inv_matrix_camera_inertial = mx_ut.inverse_matrix(
+        rot_and_translation_mx_camera_to_inertial(angle_camera))
     return mx_ut.matrix_vector_multipl(inv_matrix_camera_inertial, camera)
 
 
-def transform_inertial_to_camera(inertial):
-    return mx_ut.matrix_vector_multipl(rot_and_translation_mx_camera_to_inertial(angle_camera), inertial)
+def transform_camera_to_inertial(inertial):
+    return mx_ut.matrix_vector_multipl(
+        rot_and_translation_mx_camera_to_inertial(angle_camera), inertial)
 
 
-def generate_inertial_frame_from_camera_frame(inv_matrix_camera_inertial):
-    xcam = transform_inertial_to_camera(e1_inertial)
-    ycam = transform_inertial_to_camera(e2_inertial)
-    zcam = transform_inertial_to_camera(e3_inertial)
-    print(xcam, ycam, zcam)
-    org_cam = transform_inertial_to_camera(origin_inertial)
-    print(org_cam)
-    x_inert = mx_ut.matrix_vector_multipl(inv_matrix_camera_inertial, xcam)
-    y_inert = mx_ut.matrix_vector_multipl(inv_matrix_camera_inertial, ycam)
-    z_inert = mx_ut.matrix_vector_multipl(inv_matrix_camera_inertial, zcam)
-    print(x_inert, y_inert, z_inert)
-    orig_inert = mx_ut.matrix_vector_multipl(inv_matrix_camera_inertial, org_cam)
+def generate_frame(unit):
+    e1 = Vector(unit, 0, 0)
+    e2 = Vector(0, unit, 0)
+    e3 = Vector(0, 0, unit)
+    origin = Point(0, 0, 0)
+    return e1, e2, e3, origin
 
 
-
-# INPUT TESTING POINT
-fig = plt.figure(1)
-ax = plt_ut.generate_plot(fig)
-
-
-# Generate the inertial frame
-unit = 6
-e1_inertial = Vector(unit, 0, 0)
-e2_inertial = Vector(0, unit, 0)
-e3_inertial = Vector(0, 0, unit)
-origin_inertial = Point(0, 0, 0)
-
-camera_e1_camera = Vector(unit, 0, 0)
-camera_e2_camera = Vector(0, unit, 0)
-camera_e3_camera = Vector(0, 0, unit)
-camera_origin_camera = Point(0, 0, 0)
-# INPUT data from the C++ algorithm
-
-n_world_input = Vector(0.2, 0.1, -1)
-n_camera = transform_inertial_to_camera(n_world_input) # replace with camera ellipse normal algorithm
-print(n_camera)
-plot_frames(ax)
-
-# PART 1 bis: Transformation viceversa from
-# CAMERA FRAME to INERTIAL FRAME
-
-
-inv_matrix_camera_inertial = mx_ut.inverse_matrix(rot_and_translation_mx_camera_to_inertial(angle_camera))
-generate_inertial_frame_from_camera_frame(inv_matrix_camera_inertial)
-
-
-
-# PART 2: Solving Linear Equation
-# c0 + landa * d = p0 + alpha * u + beta * v [camera coordinates]
-
-# TERM 1: c0
-# c0 represents the position of the camera
-# c0 in camera coordinates is (0,0,0,1)
-# c0 in world coordinates is (-24, 0, 40)
-
-print("Camera position")
-c0_world = transform_inertial_to_camera(origin_inertial)
-print(c0_world)
-# TERM 2: d
-# d represents the direction vector starting
-# at the camera center in the direction
-# of the point of interest (e.g. center of the smaller ellipses)
-
-# INPUT TEST
-elipse1 = np.array([cam.X_elip_cm[0], cam.Y_elip_cm[0], cam.FOCUS, 0])
-elipse2 = np.array([cam.X_elip_cm[1], cam.Y_elip_cm[1], cam.FOCUS, 0])
-elipse3 = np.array([cam.X_elip_cm[2], cam.Y_elip_cm[2], cam.FOCUS, 0])
-
-direction1 = transform_camera_to_inertial(elipse1)
-print("direction1")
-print(direction1)
-direction2 = transform_camera_to_inertial(elipse2)
-direction3 = transform_camera_to_inertial(elipse3)
-
-plot_vector(direction1, transform_inertial_to_camera(origin_inertial), style=plt_ut.arr_prop_y)
-plot_vector(direction2, transform_inertial_to_camera(origin_inertial))
-plot_vector(direction3, transform_inertial_to_camera(origin_inertial))
-
-# TERM 3: P0
-# P0 represents the center of the main ellipse
-# it is computed by starting in the centre of the sphere
-# and moving up in the direction of the n vector
-
-sphere_radius = 10 # cm
-def gets_center_drawing_plane(n):
+def gets_center_drawing_plane(n, e3_inertial, orig_inertial):
     if np.dot(n, e3_inertial) < 0:
         n = -n  # make sure n points up
     norm = np.linalg.norm(n)
-    P0_world = origin_inertial + sphere_radius * n/norm
-    plot_vector(P0_world, origin_inertial, style=plt_ut.arr_prop_y)
+    P0_world = orig_inertial + sphere_radius * n/norm
+    plot_vector(P0_world, orig_inertial, style=plt_ut.arr_yellow)
     return P0_world
 
 
-
-# Verify P0 satisfies sphere equation
 def sphere_eq_verification(P0_world):
-    result = P0_world[0] * P0_world[0] + P0_world[1] * P0_world[1] + P0_world[2] * P0_world[2]
-    if result == sphere_radius*sphere_radius:
+    product = P0_world[0]**2 + P0_world[1]**2 + P0_world[2]**2
+    if product == sphere_radius**2:
         return True
     else:
         return False
 
 
-n_world = transform_camera_to_inertial(n_camera)
-print("n_world",n_world)
-P0_world = gets_center_drawing_plane(n_world)
-plot_plane(P0_world[0:3], n_world[0:3])
-
-
-def find_vector_bases(n,u):
+def find_vector_bases(n, u):
     combined_vectors = np.array([n, u])
     u = (gram_schmidt.gs(combined_vectors)[1])
     v = mx_ut.cross_product(n, u)
     return u, v
 
 
-u_arbitrary = Vector(1, 0, 0)  # arbitrary chosen
-n_world = mx_ut.normalize(n_world)
-u_world, v_world = find_vector_bases(n_world[0:3], u_arbitrary[0:3])
-u_world = mx_ut.normalize(u_world)
-v_world = mx_ut.normalize(v_world)
+def generate_matrix_from_d_u_v(d, u, v):
+    duv = np.array([[d[0], -u[0], -v[0]],
+                    [d[1], -u[1], -v[1]],
+                    [d[2], -u[2], -v[2]]])
+    return mx_ut.inverse_matrix_lg(duv)
 
 
-
-plot_vector(u_world * 6, P0_world, plt_ut.arr_prop_red)
-plot_vector(v_world * 6, P0_world, plt_ut.arr_prop_green)
-plot_vector(n_world * 6, P0_world, plt_ut.arr_prop_blue)
-
-
-def generate_matrix_from_direction_u_v(d,u,v):
-    duv = np.array([[direction1[0], -u_world[0], -v_world[0]],
-                [direction1[1], -u_world[1], -v_world[1]],
-                [direction1[2], -u_world[2], -v_world[2]]])
-    duv_inv = mx_ut.inverse_matrix_lg(duv)
-    return duv_inv
-
-
-def solve_lin_eq(P0C0, duv_inv):
-    landa = duv_inv[0][0]*P0C0[0] + duv_inv[0][1]*P0C0[1] + duv_inv[0][2]*P0C0[2]
-    alpha = duv_inv[1][0]*P0C0[0] + duv_inv[1][1]*P0C0[1] + duv_inv[1][2]*P0C0[2]
-    beta = duv_inv[2][0]*P0C0[0] + duv_inv[2][1]*P0C0[1] + duv_inv[2][2]*P0C0[2]
-    return landa, alpha, beta
-
-def calculate_interaction_point(d, landa, c):
+def calculate_intersection_point(d, landa, c):
     return c + landa * d
 
 
-# Point Test 1
-duv_inv = generate_matrix_from_direction_u_v(direction1, u_world, v_world)
-P0C0 = P0_world[0:3] - c0_world[0:3]
-landa, alpha, beta = solve_lin_eq(P0C0, duv_inv)
+def solve(d, u, v, P0_world, c0_world):
+    duv_inv = generate_matrix_from_d_u_v(d, u, v)
+    [landa, alpha, beta] = duv_inv.dot(P0_world[0:3] - c0_world[0:3])
+    point = calculate_intersection_point(d, landa, c0_world)
+    return landa, alpha, beta, point
 
-point = calculate_interaction_point(direction1, landa, c0_world)
-ax.scatter(point[0], point[1], point[2], c='r', marker='^')
-print("Point is: ", point)
-plot_vector(direction1*landa, transform_inertial_to_camera(origin_inertial), style=plt_ut.arr_prop_y)
+def input_from_algorithm(n_camera, center_small_ellip):
+
+    # PART 1: Generate & Plot camera and inertial frame
+    unit = 10
+    e1_inertial, e2_inertial, e3_inertial, orig_inertial = generate_frame(unit)
+    frame_inertial = np.array([e1_inertial, e2_inertial,
+                               e3_inertial, orig_inertial])
+
+    cam_e1_cam, cam_e2_cam, cam_e3_cam, cam_orig_cam = generate_frame(unit)
+    frame_camera = np.array([cam_e1_cam, cam_e2_cam, cam_e3_cam, cam_orig_cam])
+    plot_frames(ax, frame_inertial, frame_camera)
+
+    # PART 2: Determine coefficients of the Linear Equation
+    # c0 + landa * d = p0 + alpha * u + beta * v
+
+    # TERM 1: c0 - position of the camera in camera coordinats
+    # c0 in world coordinates is (-24, 0, 40)
+    c0_world = cam_orig_inertial = transform_camera_to_inertial(cam_orig_cam)
+
+    # TERM 2: d ( direction_center_elipse)
+    # d represents the direction vector starting at the camera center in the
+    # direction of the point of interest (e.g. center of the smaller ellipses)
+
+    dir_center_elipse_world = transform_camera_to_inertial(center_small_ellip)
+    print(center_small_ellip)
+
+    plot_vector(dir_center_elipse_world * unit, cam_orig_inertial,
+                style=plt_ut.arr_yellow)
+
+    # TERM 3: P0
+    # P0 represents the center of the main ellipse. It is computed by starting
+    # in the centre of the sphere, moving up in the direction of the n vector
+
+    n_world = transform_camera_to_inertial(n_camera)
+    P0_world = gets_center_drawing_plane(n_world, e3_inertial, orig_inertial)
+    try:
+        sphere_eq_verification(P0_world)
+    except False:
+        print("Sphere equation is not fulfilled")
+    plot_plane(P0_world[0:3], n_world[0:3])
+
+    # TERM 4, 5: u and v (the two orthogonal vectors in the plane)
+    # Determined using Gram-Schmidt algorithm
+    u_arbitrary = Vector(1, 0, 0)  # arbitrary chosen
+    n_world = mx_ut.normalize(n_world)
+    u_world, v_world = find_vector_bases(n_world[0:3], u_arbitrary[0:3])
+    u_world = mx_ut.normalize(u_world)
+    v_world = mx_ut.normalize(v_world)
+    plot_vector(u_world * scale, P0_world, plt_ut.arr_red)
+    plot_vector(v_world * scale, P0_world, plt_ut.arr_green)
+    plot_vector(n_world * scale, P0_world, plt_ut.arr_blue)
+
+    # PART 3: Solve Linear Equation
+    landa, alpha, beta, pt = solve(dir_center_elipse_world, u_world, v_world,
+                                    P0_world, c0_world)
+
+    ax.scatter(pt[0], pt[1], pt[2], c='r', marker='^')
+    plot_vector(dir_center_elipse_world * landa, cam_orig_inertial,
+                style=plt_ut.arr_yellow)
+
+    # Test start with the point generate and get the X,Y (cm)
+    direction_pt_world = pt - c0_world
+    direction_pt_camera = transform_inertial_to_camera(direction_pt_world)
+    print(direction_pt_camera/direction_pt_camera[2]*cam.FOCUS)
+
+    return pt
 
 
-print ("Landa", landa)
-print ("Alpha", alpha)
-print ("Beta", beta)
+fig = plt.figure(1)
+ax = plt_ut.generate_plot(fig)
 
+# INPUT TESTING POINT
+n_world_input = Vector(0.2, 0.1, -1)
+n_camera = transform_inertial_to_camera(n_world_input)
+elipse_center_cam = Vector(cam.X_elip_cm[0], cam.Y_elip_cm[0], cam.FOCUS)
+point_world = input_from_algorithm(n_camera, elipse_center_cam)
 
-
+print(point_world)
 plt.show()
-

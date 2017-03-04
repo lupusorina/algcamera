@@ -23,4 +23,3 @@ def gs(X):
         Y.append(temp_vec)
     return Y
 
-

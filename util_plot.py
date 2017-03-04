@@ -38,9 +38,9 @@ def remove_plot(ax, a, b, c):
     ax.remove(c)
 
 
-arr_prop_red = dict(mutation_scale=10, arrowstyle='->', color='r', lw = 2)
-arr_prop_green = dict(mutation_scale=10, arrowstyle='->', color='g', lw = 2)
-arr_prop_blue = dict(mutation_scale=10, arrowstyle='->', color='b', lw = 2)
-arr_prop_y = dict(mutation_scale=10, arrowstyle='->', color='y', lw = 1)
+arr_red = dict(mutation_scale=10, arrowstyle='->', color='r', lw = 2)
+arr_green = dict(mutation_scale=10, arrowstyle='->', color='g', lw = 2)
+arr_blue = dict(mutation_scale=10, arrowstyle='->', color='b', lw = 2)
+arr_yellow = dict(mutation_scale=10, arrowstyle='->', color='y', lw = 1)
 
 
