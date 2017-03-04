@@ -115,3 +115,11 @@ def inverse_matrix(A):
 def inverse_matrix_lg(A):
     return inv(A)
 
+def normalize(a):
+    module = math.sqrt(a[0]**2 + a[1]**2 + a[2]**2)
+    vect = np.array([0.0, 0.0, 0.0])
+    vect[0] = a[0] / module
+    vect[1] = a[1] / module
+    vect[2] = a[2] / module
+
+    return vect
