@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-c -Wall
+CFLAGS=-c -Wall -g
 LIBPATH = -I/usr/local/include/Eigen/
 EXE_SOURCES=main.cpp
 SOURCES=algorithm.cpp
