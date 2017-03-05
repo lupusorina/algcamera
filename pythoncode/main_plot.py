@@ -1,10 +1,11 @@
+import matplotlib
+matplotlib.use('WebAgg')
 import gram_schmidt
 import numpy as np
 import matrix_utils as mx_ut
 import util_plot as plt_ut
 import camera as cam
 import matplotlib.pyplot as plt
-plt.switch_backend('WebAgg')
 
 # PARAMETERS OF THE ENVIRONMENT (EXTRINSIC)
 # Position of the camera relative
@@ -123,11 +124,12 @@ def sphere_eq_verification(P0_world):
 def find_vector_bases(n, u):
     combined_vectors = np.array([n, u])
     u = (gram_schmidt.gs(combined_vectors)[1])
-    v = mx_ut.cross_product(n, u)
+    v = np.cross(n, u)
     return u, v
 
 
 def generate_matrix_from_d_u_v(d, u, v):
+
     duv = np.array([[d[0], -u[0], -v[0]],
                     [d[1], -u[1], -v[1]],
                     [d[2], -u[2], -v[2]]])
@@ -169,7 +171,6 @@ def input_from_algorithm(n_camera, center_small_ellip):
     # direction of the point of interest (e.g. center of the smaller ellipses)
 
     dir_center_elipse_world = transform_camera_to_inertial(center_small_ellip)
-    print(dir_center_elipse_world)
 
     plot_vector(dir_center_elipse_world * unit, cam_orig_inertial,
                 style=plt_ut.arr_yellow)
@@ -185,7 +186,6 @@ def input_from_algorithm(n_camera, center_small_ellip):
     except False:
         print("Sphere equation is not fulfilled")
     plot_plane(P0_world[0:3], n_world[0:3])
-    print(P0_world)
 
     # TERM 4, 5: u and v (the two orthogonal vectors in the plane)
     # Determined using Gram-Schmidt algorithm
@@ -209,7 +209,6 @@ def input_from_algorithm(n_camera, center_small_ellip):
     # Test start with the point generate and get the X,Y (cm)
     direction_pt_world = pt - c0_world
     direction_pt_camera = transform_inertial_to_camera(direction_pt_world)
-    print(direction_pt_camera/direction_pt_camera[2]*cam.FOCUS)
 
     return pt
 
@@ -222,4 +221,5 @@ n_world_input = Vector(0.2, 0.1, -1)
 n_camera = transform_inertial_to_camera(n_world_input)
 elipse_center_cam = Vector(cam.X_elip_cm[0], cam.Y_elip_cm[0], cam.FOCUS)
 point_world = input_from_algorithm(n_camera, elipse_center_cam)
+print(point_world)
 plt.show()

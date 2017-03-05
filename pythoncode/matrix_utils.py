@@ -13,12 +13,6 @@ def verify_orthogonality(a, b):
         print("the two vectors are NOT orthogonal")
 
 
-def cross_product(a, b):
-    v = np.array([0.0, 0.0, 0.0])
-    v[0] = a[1]*b[2] - a[2]*b[1]
-    v[1] = a[0]*b[2] - a[2]*b[0]
-    v[2] = a[0]*b[1] - a[1]*b[0]
-    return v
 
 
 def matrix_vector_multipl(a, b):
