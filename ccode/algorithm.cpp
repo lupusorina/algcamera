@@ -57,7 +57,7 @@ MatrixXd transform_camera_to_inertial(MatrixXd &camera, MatrixXd &transform_matr
 
 MatrixXd transform_inertial_to_camera(MatrixXd &inertial, MatrixXd &transform_matrix)
 {
-    return transform_matrix.inverse() * inertial.transpose();
+    return (transform_matrix.inverse() * inertial.transpose()).transpose();
 }
 
 MatrixXd gets_center_drawing_plane(MatrixXd &n, MatrixXd &e3_inertial, MatrixXd &orig_inertial)
@@ -68,11 +68,17 @@ MatrixXd gets_center_drawing_plane(MatrixXd &n, MatrixXd &e3_inertial, MatrixXd 
     if (product(0,0) < 0)
         n = -n;  // make sure n points up
     P0_world = orig_inertial + sphere_radius * n.normalized();
-    return P0_world;
+    return P0_world.transpose();
 }
 
 bool sphere_eq_verification(MatrixXd P0_world){
     if (floor(P0_world.norm()) == sphere_radius)
+        return true;
+    else
+        return false;
+}
+bool verify_orthogonality(MatrixXd &a, MatrixXd &b){
+    if ((a * b.transpose())(0,0) < 0.0001)
         return true;
     else
         return false;
@@ -93,3 +99,18 @@ MatrixXd gs(MatrixXd &n, MatrixXd &u){
     u2 = u - proj(u1, u);
     return u2;
 }
+
+
+void find_vector_bases(MatrixXd &u_norm, MatrixXd &v_norm, MatrixXd &n_norm)
+{
+    MatrixXd u_arbitrary = Vector(1, 0, 0);
+    MatrixXd u(1,4);
+    MatrixXd v(1,4), v_cross_product(1,4);
+    u = gs(n_norm, u_arbitrary);
+    v_cross_product = u.block<1,3>(0,0).cross(n_norm.block<1,3>(0,0));
+    v_norm = Vector(v_cross_product(0,0), v_cross_product(0,1), v_cross_product(0,2));
+    u_norm = u.normalized();
+
+}
+
+

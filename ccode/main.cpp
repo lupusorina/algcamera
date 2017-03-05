@@ -48,7 +48,6 @@ int main()
     MatrixXd n_world_input = Vector(0.2, 0.1, -1);
     MatrixXd n_camera = transform_inertial_to_camera(n_world_input, transform_matrix);
 
-
     // TERM 1: C0_world - position of the camera in world coordinates
     c0_world = transform_camera_to_inertial(cam_orig_cam, transform_matrix);
 
@@ -61,7 +60,7 @@ int main()
     // P0 represents the center of the main ellipse. It is computed by starting
     // in the centre of the sphere, moving up in the direction of the n vector
     MatrixXd n_camera_transpose = n_camera.transpose();
-    MatrixXd n_world = transform_camera_to_inertial(n_camera_transpose, transform_matrix);
+    MatrixXd n_world = transform_camera_to_inertial(n_camera, transform_matrix);
     MatrixXd n_world_transpose = n_world.transpose();
     MatrixXd P0_world = gets_center_drawing_plane(n_world_transpose, e3_inertial, orig_inertial);
 
@@ -70,11 +69,34 @@ int main()
     }
 
     // TERM 4,5: U,V using Gram-Schmidt
+    MatrixXd u_world_normalized(1,4);
+    MatrixXd v_world_normalized(1,4);
+    find_vector_bases(u_world_normalized, v_world_normalized, n_world_transpose);
 
-    MatrixXd u_arbitrary = Vector(1, 0, 0);
-    MatrixXd n_world_normalized = n_world_transpose.normalized();
-    cout << n_world_normalized;
-    cout <<"output of algorithm";
-    cout << gs(n_world_normalized, u_arbitrary);
+    if (!verify_orthogonality(u_world_normalized, v_world_normalized) ||
+        !verify_orthogonality(n_world_transpose, v_world_normalized) ||
+        !verify_orthogonality(n_world_transpose, u_world_normalized)) {
+        throw std::invalid_argument( "N,U,V not orthogonal" );
+    }
 
+    // Solve Linear equation
+    MatrixXd P0C0(3,1);
+    cout << P0_world << endl;
+    cout << c0_world << endl;
+
+    P0C0(0,0) = P0_world(0,0) - c0_world(0,0);
+    P0C0(1,0) = P0_world(1,0) - c0_world(1,0);
+    P0C0(2,0) = P0_world(2,0) - c0_world(2,0);
+
+    cout << P0C0;
+    MatrixXd DUV = MatrixXd::Zero(3,3);
+    MatrixXd DUV_inverse = MatrixXd::Zero(3,3);
+
+    DUV.block(0,0,3,1) = dir_center_elipse_world.block(0,0,3,1);
+    DUV.block(0,1,3,1) = ((-1)*u_world_normalized.transpose()).block(0,0,3,1);
+    DUV.block(0,2,3,1) = ((-1)*v_world_normalized.transpose()).block(0,0,3,1);
+
+    DUV_inverse = DUV.inverse();
+    cout << DUV_inverse<< endl;
+    cout << DUV_inverse*P0C0 << endl;
 }

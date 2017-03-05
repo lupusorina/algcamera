@@ -1,6 +1,4 @@
 #include "algorithm.h"
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
 #include <iostream>
 #include "CppUTest/CommandLineTestRunner.h"
 

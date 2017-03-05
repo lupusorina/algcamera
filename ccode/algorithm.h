@@ -42,4 +42,8 @@ bool sphere_eq_verification(Eigen::MatrixXd P0_world);
 double gs_coefficient(Eigen::MatrixXd &v1, Eigen::MatrixXd &v2);
 Eigen::MatrixXd proj(Eigen::MatrixXd &v1, Eigen::MatrixXd &v2);
 Eigen::MatrixXd gs(Eigen::MatrixXd &n, Eigen::MatrixXd &u);
+void find_vector_bases(Eigen::MatrixXd &u_norm, Eigen::MatrixXd &v_norm, Eigen::MatrixXd &n);
+bool verify_orthogonality(Eigen::MatrixXd &a, Eigen::MatrixXd &b);
+
+
 #endif
