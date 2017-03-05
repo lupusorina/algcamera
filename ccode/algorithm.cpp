@@ -65,10 +65,31 @@ MatrixXd gets_center_drawing_plane(MatrixXd &n, MatrixXd &e3_inertial, MatrixXd 
     MatrixXd P0_world;
     MatrixXd product(0,0);
     product = e3_inertial * n.transpose();
-
     if (product(0,0) < 0)
         n = -n;  // make sure n points up
-
     P0_world = orig_inertial + sphere_radius * n.normalized();
     return P0_world;
+}
+
+bool sphere_eq_verification(MatrixXd P0_world){
+    if (floor(P0_world.norm()) == sphere_radius)
+        return true;
+    else
+        return false;
+}
+
+double gs_coefficient(MatrixXd &v1, MatrixXd &v2){
+    return (v2 * v1.transpose())(0,0)/(v1 * v1.transpose())(0,0);
+}
+
+MatrixXd proj(MatrixXd &v1, MatrixXd &v2){
+    return gs_coefficient(v1,v2)*v1;
+}
+
+MatrixXd gs(MatrixXd &n, MatrixXd &u){
+    MatrixXd u1;
+    u1 = n;
+    MatrixXd u2;
+    u2 = u - proj(u1, u);
+    return u2;
 }

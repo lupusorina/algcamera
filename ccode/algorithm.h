@@ -38,4 +38,8 @@ Eigen::MatrixXd gets_center_drawing_plane(Eigen::MatrixXd &n, Eigen::MatrixXd &e
 Eigen::MatrixXd transform_inertial_to_camera(Eigen::MatrixXd &inertial, Eigen::MatrixXd &transform_matrix);
 Eigen::MatrixXd transform_camera_to_inertial(Eigen::MatrixXd &camera, Eigen::MatrixXd &transform_matrix);
 
+bool sphere_eq_verification(Eigen::MatrixXd P0_world);
+double gs_coefficient(Eigen::MatrixXd &v1, Eigen::MatrixXd &v2);
+Eigen::MatrixXd proj(Eigen::MatrixXd &v1, Eigen::MatrixXd &v2);
+Eigen::MatrixXd gs(Eigen::MatrixXd &n, Eigen::MatrixXd &u);
 #endif

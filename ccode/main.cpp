@@ -35,27 +35,22 @@ int main()
 
     MatrixXd c0_world = MatrixXd::Zero(1,4);
 
-
-    // TERM 1: C0_world - position of the camera in world coordinates
-    c0_world = transform_camera_to_inertial(cam_orig_cam, transform_matrix);
-
-
-
-
     // INPUT IN THE ALGORITHM - TO BE REPLACED
     // WITH OPENCV ellipse determination & n vectors
     // from Sebastien
 
     double x_elip_px = 375.992;
     double y_elip_px = 166.052;
-
     double x_elip_cm = X_img_px_to_mm_and_centered(x_elip_px)/10;
     double y_elip_cm = Y_img_px_to_mm_and_centered(y_elip_px)/10;
 
     MatrixXd elipse_center_cam = Vector(x_elip_cm, y_elip_cm, FOCUS);
-
     MatrixXd n_world_input = Vector(0.2, 0.1, -1);
     MatrixXd n_camera = transform_inertial_to_camera(n_world_input, transform_matrix);
+
+
+    // TERM 1: C0_world - position of the camera in world coordinates
+    c0_world = transform_camera_to_inertial(cam_orig_cam, transform_matrix);
 
     // TERM 2: d (direction_center_elipse)
     // d represents the direction vector starting at the camera center in the
@@ -70,5 +65,16 @@ int main()
     MatrixXd n_world_transpose = n_world.transpose();
     MatrixXd P0_world = gets_center_drawing_plane(n_world_transpose, e3_inertial, orig_inertial);
 
-    cout << P0_world << endl;
+    if (!sphere_eq_verification(P0_world)) {
+        throw std::invalid_argument( "P0 doesn't verify sphere equation" );
+    }
+
+    // TERM 4,5: U,V using Gram-Schmidt
+
+    MatrixXd u_arbitrary = Vector(1, 0, 0);
+    MatrixXd n_world_normalized = n_world_transpose.normalized();
+    cout << n_world_normalized;
+    cout <<"output of algorithm";
+    cout << gs(n_world_normalized, u_arbitrary);
+
 }
