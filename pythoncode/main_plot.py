@@ -79,10 +79,6 @@ def translation_mx_camera_to_inertial(dx, dy, dz):
 
 
 def rot_and_translation_mx_camera_to_inertial(angle_camera):
-    print("rot and translation")
-    print (mx_ut.matrix_matrix_multipl(
-                 translation_mx_camera_to_inertial(dx_cam, dy_cam, dz_cam),
-                 rot_mx_camera_to_inertial(angle_camera)))
     return mx_ut.matrix_matrix_multipl(
                  translation_mx_camera_to_inertial(dx_cam, dy_cam, dz_cam),
                  rot_mx_camera_to_inertial(angle_camera))
@@ -165,6 +161,7 @@ def input_from_algorithm(n_camera, center_small_ellip):
 
     # TERM 1: c0 - position of the camera in camera coordinats
     # c0 in world coordinates is (-24, 0, 40)
+
     c0_world = cam_orig_inertial = transform_camera_to_inertial(cam_orig_cam)
 
     # TERM 2: d ( direction_center_elipse)
@@ -172,7 +169,7 @@ def input_from_algorithm(n_camera, center_small_ellip):
     # direction of the point of interest (e.g. center of the smaller ellipses)
 
     dir_center_elipse_world = transform_camera_to_inertial(center_small_ellip)
-    print(center_small_ellip)
+    print(dir_center_elipse_world)
 
     plot_vector(dir_center_elipse_world * unit, cam_orig_inertial,
                 style=plt_ut.arr_yellow)
@@ -188,6 +185,7 @@ def input_from_algorithm(n_camera, center_small_ellip):
     except False:
         print("Sphere equation is not fulfilled")
     plot_plane(P0_world[0:3], n_world[0:3])
+    print(P0_world)
 
     # TERM 4, 5: u and v (the two orthogonal vectors in the plane)
     # Determined using Gram-Schmidt algorithm
@@ -224,6 +222,4 @@ n_world_input = Vector(0.2, 0.1, -1)
 n_camera = transform_inertial_to_camera(n_world_input)
 elipse_center_cam = Vector(cam.X_elip_cm[0], cam.Y_elip_cm[0], cam.FOCUS)
 point_world = input_from_algorithm(n_camera, elipse_center_cam)
-
-print(point_world)
 plt.show()
