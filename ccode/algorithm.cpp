@@ -113,4 +113,27 @@ void find_vector_bases(MatrixXd &u_norm, MatrixXd &v_norm, MatrixXd &n_norm)
 
 }
 
+MatrixXd solve_linear_eq(MatrixXd &P0, MatrixXd &c0, MatrixXd &d, MatrixXd &u, MatrixXd &v){
+    MatrixXd P0C0(3,1);
+    MatrixXd coefficients(3,1);
+    P0C0(0,0) = P0(0,0) - c0(0,0);
+    P0C0(1,0) = P0(1,0) - c0(1,0);
+    P0C0(2,0) = P0(2,0) - c0(2,0);
+
+    MatrixXd DUV = MatrixXd::Zero(3,3);
+    MatrixXd DUV_inverse = MatrixXd::Zero(3,3);
+
+    DUV.block(0,0,3,1) = d.block(0,0,3,1);
+    DUV.block(0,1,3,1) = ((-1)*u.transpose()).block(0,0,3,1);
+    DUV.block(0,2,3,1) = ((-1)*v.transpose()).block(0,0,3,1);
+
+    DUV_inverse = DUV.inverse();
+    coefficients = DUV_inverse * P0C0;
+    return coefficients;
+}
+
+MatrixXd calculate_intersection_point(MatrixXd &d, double landa, MatrixXd &c){
+    return c + landa * d;
+}
+
 

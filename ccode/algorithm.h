@@ -45,5 +45,8 @@ Eigen::MatrixXd gs(Eigen::MatrixXd &n, Eigen::MatrixXd &u);
 void find_vector_bases(Eigen::MatrixXd &u_norm, Eigen::MatrixXd &v_norm, Eigen::MatrixXd &n);
 bool verify_orthogonality(Eigen::MatrixXd &a, Eigen::MatrixXd &b);
 
+Eigen::MatrixXd solve_linear_eq(Eigen::MatrixXd &P0, Eigen::MatrixXd &C0, Eigen::MatrixXd &d, Eigen::MatrixXd &u, Eigen::MatrixXd &v);
+Eigen::MatrixXd calculate_intersection_point(Eigen::MatrixXd &d, double landa, Eigen::MatrixXd &c);
+
 
 #endif

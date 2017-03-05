@@ -80,23 +80,13 @@ int main()
     }
 
     // Solve Linear equation
-    MatrixXd P0C0(3,1);
-    cout << P0_world << endl;
-    cout << c0_world << endl;
 
-    P0C0(0,0) = P0_world(0,0) - c0_world(0,0);
-    P0C0(1,0) = P0_world(1,0) - c0_world(1,0);
-    P0C0(2,0) = P0_world(2,0) - c0_world(2,0);
+    MatrixXd coefficients(3,1);
+    coefficients = solve_linear_eq(P0_world, c0_world, dir_center_elipse_world, u_world_normalized, v_world_normalized);
 
-    cout << P0C0;
-    MatrixXd DUV = MatrixXd::Zero(3,3);
-    MatrixXd DUV_inverse = MatrixXd::Zero(3,3);
-
-    DUV.block(0,0,3,1) = dir_center_elipse_world.block(0,0,3,1);
-    DUV.block(0,1,3,1) = ((-1)*u_world_normalized.transpose()).block(0,0,3,1);
-    DUV.block(0,2,3,1) = ((-1)*v_world_normalized.transpose()).block(0,0,3,1);
-
-    DUV_inverse = DUV.inverse();
-    cout << DUV_inverse<< endl;
-    cout << DUV_inverse*P0C0 << endl;
+    // Get the point
+    MatrixXd point(1,3);
+    double landa = coefficients(0,0);
+    point = calculate_intersection_point(dir_center_elipse_world, landa, c0_world);
+    cout << point;
 }
