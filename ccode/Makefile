@@ -1,15 +1,23 @@
 CC=g++
 CFLAGS=-c -Wall
 LIBPATH = -I/usr/local/include/Eigen/
+EXE_SOURCES=main.cpp
 SOURCES=algorithm.cpp
-LDFLAGS=
+TEST_SOURCES=test_algorithm.cpp
+LDFLAGS=-lCppUTest -lCppUTestExt
 OBJECTS=$(SOURCES:.cpp=.o)
+EXE_OBJECTS=$(EXE_SOURCES:.cpp=.o)
+TEST_OBJECTS=$(TEST_SOURCES:.cpp=.o)
 EXECUTABLE=algorithm
+UNITTESTS=test_algorithm
 
 all: $(SOURCES)  $(EXECUTABLE)
 
-$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(LDFLAGS)  $(OBJECTS) -o $@
+$(EXECUTABLE): $(OBJECTS) $(EXE_OBJECTS)
+	$(CC) $(LDFLAGS)  $(OBJECTS) $(EXE_OBJECTS) -o $@
+
+$(UNITTESTS): $(OBJECTS) $(TEST_OBJECTS)
+	$(CC) $(LDFLAGS)  $(OBJECTS) $(TEST_OBJECTS) -o $@
 
 .cpp.o:
 	$(CC) $(LIBPATH) $(CFLAGS) $< -o $@
@@ -17,5 +25,8 @@ $(EXECUTABLE): $(OBJECTS)
 clean:
 	rm *o $(OBJECTS) $(EXECUTABLE)
 
-run: ./$(EXECUTABLE)
+run: $(EXECUTABLE)
 	./$(EXECUTABLE) ${ARGS}
+
+check: $(UNITTESTS)
+	./$(UNITTESTS)
