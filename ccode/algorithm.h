@@ -33,8 +33,6 @@ void rot_mx_camera_to_inertial(Eigen::MatrixXd &rot_mx);
 double X_img_px_to_mm_and_centered(double point);
 double Y_img_px_to_mm_and_centered(double point);
 Eigen::MatrixXd gets_center_drawing_plane(Eigen::MatrixXd &n, Eigen::MatrixXd &e3_inertial, Eigen::MatrixXd &orig_inertial);
-
-
 Eigen::MatrixXd transform_inertial_to_camera(Eigen::MatrixXd &inertial, Eigen::MatrixXd &transform_matrix);
 Eigen::MatrixXd transform_camera_to_inertial(Eigen::MatrixXd &camera, Eigen::MatrixXd &transform_matrix);
 

@@ -100,7 +100,6 @@ MatrixXd gs(MatrixXd &n, MatrixXd &u){
     return u2;
 }
 
-
 void find_vector_bases(MatrixXd &u_norm, MatrixXd &v_norm, MatrixXd &n_norm)
 {
     MatrixXd u_arbitrary = Vector(1, 0, 0);
