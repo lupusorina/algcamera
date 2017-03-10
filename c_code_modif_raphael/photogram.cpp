@@ -1,5 +1,4 @@
 #include "photogram.h"
-//#include "constants.h"
 
 #include <iostream>
 //#include <QDebug>
@@ -11,12 +10,12 @@ using namespace Eigen;
 
 double PHOTOGRAM_X_img_px_to_mm_and_centered(double point)
 {
-    return (point - IMG_SIZE_WIDTH / 2) * PIXEL_SIZE; // mm
+    return (point - IMG_SIZE_WIDTH / 2) * PIXEL_SIZE;
 }
 
 double PHOTOGRAM_Y_img_px_to_mm_and_centered(double point)
 {
-    return -(point - IMG_SIZE_HEIGH / 2)* PIXEL_SIZE; // mm -> minus sign to fit with photogrametric convention (y down)
+    return (point - IMG_SIZE_HEIGH / 2)* PIXEL_SIZE;
 }
 
 MatrixXd PHOTOGRAM_Point(double x,double y, double z)
@@ -75,7 +74,6 @@ void PHOTOGRAM_translation_mx_camera_to_inertial(MatrixXd &trans_mx)
     R(2, 3) = dz_cam;
 
     trans_mx = R;
-
 }
 
 void PHOTOGRAM_rot_mx_camera_to_inertial(MatrixXd &rot_mx)
@@ -87,18 +85,43 @@ void PHOTOGRAM_rot_mx_camera_to_inertial(MatrixXd &rot_mx)
     float z = PHOTOGRAM_deg2rad(0);
 
 
-    R(0,0) = 1;//cos(z) * cos(y);
-    R(1,0) = 0;//cos(z) * sin(x) * sin(y) - sin(z) * cos(x);
-    R(2,0) = 0;//cos(z) * cos(x) * sin(y) + sin(z) * sin(x);
-    R(0,1) = 0;//sin(z) * cos(y);
-    R(1,1) = cos(x);//sin(z) * sin(x) * sin(y) + cos(z) * cos(x);
-    R(2,1) = sin(x);//sin(z) * cos(x) * sin(y) - sin(x) * cos(z);
-    R(0,2) = 0;//-sin(y);
-    R(1,2) = -sin(x);//cos(y) * sin(x);
-    R(2,2) = cos(x);//cos(y) * cos(x);
+
+
+//    Quaternionf q;
+//    q.w() = 0.0322230871065;
+//    q.x() = -0.0133370038986;
+//    q.y() = 0.952664414266;
+//    q.z() = 0.302625702535;
+
+//    Matrix3f M(q);
+
+
+
+        R(0,0) = 1;//cos(z) * cos(y);
+        R(1,0) = 0;//cos(z) * sin(x) * sin(y) - sin(z) * cos(x);
+        R(2,0) = 0;//cos(z) * cos(x) * sin(y) + sin(z) * sin(x);
+        R(0,1) = 0;//sin(z) * cos(y);
+        R(1,1) = cos(x);//sin(z) * sin(x) * sin(y) + cos(z) * cos(x);
+        R(2,1) = sin(x);//sin(z) * cos(x) * sin(y) - sin(x) * cos(z);
+        R(0,2) = 0;//-sin(y);
+        R(1,2) = -sin(x);//cos(y) * sin(x);
+        R(2,2) = cos(x);//cos(y) * cos(x);
+
+//    Matrix3f mat = M.transpose();
+
+//    R(0,0) = mat(0, 0);
+//    R(1,0) = mat(1, 0);
+//    R(2,0) = mat(2, 0);
+
+//    R(0,1) = mat(0, 1);
+//    R(1,1) = mat(1, 1);
+//    R(2,1) = mat(2, 1);
+
+//    R(0,2) = mat(0, 2);
+//    R(1,2) = mat(1, 2);
+//    R(2,2) = mat(2, 2);
 
     rot_mx = R;
-    cout << rot_mx << endl;
 }
 
 MatrixXd PHOTOGRAM_transform_camera_to_inertial(MatrixXd &camera, MatrixXd &transform_matrix)
@@ -108,7 +131,7 @@ MatrixXd PHOTOGRAM_transform_camera_to_inertial(MatrixXd &camera, MatrixXd &tran
 
 MatrixXd PHOTOGRAM_transform_inertial_to_camera(MatrixXd &inertial, MatrixXd &transform_matrix)
 {
-    return (transform_matrix.inverse() * inertial).transpose(); //transpose ?
+    return (transform_matrix.inverse() * inertial.transpose()).transpose(); //transpose ?
 }
 
 MatrixXd PHOTOGRAM_gets_center_drawing_plane(MatrixXd &n_inertial, MatrixXd &E_inertial)
@@ -161,7 +184,6 @@ void PHOTOGRAM_find_vector_bases(MatrixXd &u_norm, MatrixXd &v_norm, MatrixXd &n
     //Third basis vector:
     MatrixXd u3 = PHOTOGRAM_gs_second_vect(u1, u2, v_2_arbitrary);
 
-
     u_norm = u2;
     v_norm = u3;
 }
@@ -195,6 +217,7 @@ MatrixXd PHOTOGRAM_create_transform_matrix(){
     PHOTOGRAM_rot_mx_camera_to_inertial(rotation_matrix);
     PHOTOGRAM_translation_mx_camera_to_inertial(translation_matrix);
     transform_matrix = translation_matrix * rotation_matrix;
+
     return transform_matrix;
 }
 
@@ -214,7 +237,8 @@ int PHOTOGRAM_verify_normal_vector(MatrixXd &n_camera, MatrixXd &transform_matri
 
 void PHOTOGRAM_correct_normal_vector(MatrixXd &n_inertial){
 
-    //n_inertial(1, 0) = -n_inertial(1, 0);
+    //n_inertial(0, 0) = n_inertial(0, 0);
+    n_inertial(1, 0) = -n_inertial(1, 0);
     n_inertial(2, 0) = fabs(n_inertial(2, 0));
 }
 
@@ -248,11 +272,11 @@ MatrixXd PHOTOGRAM_input_transformations(MatrixXd &n_camera, MatrixXd &d_camera,
     //MatrixXd v_inertial = PHOTOGRAM_Vector(unit, 0, 0);
     PHOTOGRAM_find_vector_bases(u_inertial, v_inertial, n_inertial);
 
-    if (!PHOTOGRAM_verify_orthogonality(u_inertial, v_inertial) ||
+    /*if (!PHOTOGRAM_verify_orthogonality(u_inertial, v_inertial) ||
         !PHOTOGRAM_verify_orthogonality(n_inertial, v_inertial) ||
         !PHOTOGRAM_verify_orthogonality(n_inertial, u_inertial)) {
-        cout<<"N,U,V not orthogonal"<<endl;
-    }
+        qDebug()<<"N,U,V not orthogonal"<<endl;
+    }*/
 
     // Solve Linear equation
     Vector3f coefficients = PHOTOGRAM_solve_linear_eq(P0_inertial, C0_inertial, d_inertial, u_inertial, v_inertial);
@@ -260,6 +284,7 @@ MatrixXd PHOTOGRAM_input_transformations(MatrixXd &n_camera, MatrixXd &d_camera,
     // Get the point
     MatrixXd I = PHOTOGRAM_Point(0, 0, 0);
     I = PHOTOGRAM_calculate_intersection_point(d_inertial, coefficients(0), C0_inertial);
+
     return I;
 }
 

@@ -1,7 +1,7 @@
 #ifndef PHOTOGRAM_H
 #define PHOTOGRAM_H
 
-//#include "constants.h"
+
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -12,9 +12,9 @@
 // Position of the camera relative
 // to the centre (inertial frame) in the axis of the inertial frame
 
-#define dx_cam                  0     // cm
-#define dy_cam                  -14       // cm
-#define dz_cam                  33      // cm
+#define dx_cam                  2.07098     // cm
+#define dy_cam                  -15.8151       // cm
+#define dz_cam                  34.308338      // cm
 #define angle_camera            60      // degrees (measured relative to XoY plane)
 #define scale                   6
 #define sphere_radius           10.4      // cm
@@ -22,9 +22,10 @@
 #define PIXEL_SIZE              0.006   // mm
 #define IMG_SIZE_HEIGH          480
 #define IMG_SIZE_WIDTH          744
+
 #define IMG_SIZE_HEIGHT_MM      IMG_SIZE_HEIGH * PIXEL_SIZE
 #define IMG_SIZE_WIDTH_MM       IMG_SIZE_WIDTH * PIXEL_SIZE
-#define FOCUS                   0.6     // cm
+#define FOCUS                   0.60549     // cm
 
 
 Eigen::MatrixXd PHOTOGRAM_Point(double x,double y,double z);
