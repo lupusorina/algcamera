@@ -21,8 +21,8 @@ def tranf_image_coord_px_mm(x, y):
 # INPUT DATA FOR TEST
 # Position of the centers of the elipses
 
-X_elip_px = [375.992, 353.51, 327.265, 311.674, 316.17, 338.743, 365.972, 381.199]
-Y_elip_px = [166.052, 152.426, 156.293, 175.538, 199.192, 213.578, 209.188, 189.199]
+X_elip_px = [356.155,  352, 342.237, 420.086, 383.095, 385.717, 365.972, 381.199]
+Y_elip_px = [187.559, 129.87, 153.799, 150.596, 141.909, 205.973, 213.578, 209.188, 189.199]
 
 X_elip_mm = np.zeros(len(X_elip_px))
 Y_elip_mm = np.zeros(len(Y_elip_px))

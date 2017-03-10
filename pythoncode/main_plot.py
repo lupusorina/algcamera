@@ -6,16 +6,16 @@ import matrix_utils as mx_ut
 import util_plot as plt_ut
 import camera as cam
 import matplotlib.pyplot as plt
-
+from numpy.linalg import inv
 # PARAMETERS OF THE ENVIRONMENT (EXTRINSIC)
 # Position of the camera relative
 # to the centre (inertial frame) in the axis of the inertial frame
-dx_cam = -24        # cm
+dx_cam = -14        # cm
 dy_cam = 0          # cm
-dz_cam = 30         # cm
-angle_camera = 45   # degrees (measured relative to XoY plane)
-scale = 10
-sphere_radius = 10  # cm
+dz_cam = 33         # cm
+angle_camera = 60   # degrees (measured relative to XoY plane)
+scale = 6
+sphere_radius = 10.4  # cm
 
 
 def Point(x, y, z):
@@ -80,6 +80,9 @@ def translation_mx_camera_to_inertial(dx, dy, dz):
 
 
 def rot_and_translation_mx_camera_to_inertial(angle_camera):
+    print(mx_ut.matrix_matrix_multipl(
+                 translation_mx_camera_to_inertial(dx_cam, dy_cam, dz_cam),
+                 rot_mx_camera_to_inertial(angle_camera)))
     return mx_ut.matrix_matrix_multipl(
                  translation_mx_camera_to_inertial(dx_cam, dy_cam, dz_cam),
                  rot_mx_camera_to_inertial(angle_camera))
@@ -133,7 +136,7 @@ def generate_matrix_from_d_u_v(d, u, v):
     duv = np.array([[d[0], -u[0], -v[0]],
                     [d[1], -u[1], -v[1]],
                     [d[2], -u[2], -v[2]]])
-    return mx_ut.inverse_matrix_lg(duv)
+    return inv(duv)
 
 
 def calculate_intersection_point(d, landa, c):
@@ -166,11 +169,14 @@ def input_from_algorithm(n_camera, center_small_ellip):
 
     c0_world = cam_orig_inertial = transform_camera_to_inertial(cam_orig_cam)
 
+    #print ("c world", c0_world)
     # TERM 2: d ( direction_center_elipse)
     # d represents the direction vector starting at the camera center in the
     # direction of the point of interest (e.g. center of the smaller ellipses)
 
     dir_center_elipse_world = transform_camera_to_inertial(center_small_ellip)
+
+    #print("dir center elispe world", dir_center_elipse_world)
 
     plot_vector(dir_center_elipse_world * unit, cam_orig_inertial,
                 style=plt_ut.arr_yellow)
@@ -180,13 +186,17 @@ def input_from_algorithm(n_camera, center_small_ellip):
     # in the centre of the sphere, moving up in the direction of the n vector
 
     n_world = transform_camera_to_inertial(n_camera)
+    #print("n world", n_world)
     P0_world = gets_center_drawing_plane(n_world, e3_inertial, orig_inertial)
+
+
     try:
         sphere_eq_verification(P0_world)
     except False:
         print("Sphere equation is not fulfilled")
     plot_plane(P0_world[0:3], n_world[0:3])
 
+    #print("P0 world ", P0_world)
     # TERM 4, 5: u and v (the two orthogonal vectors in the plane)
     # Determined using Gram-Schmidt algorithm
     u_arbitrary = Vector(1, 0, 0)  # arbitrary chosen
@@ -202,13 +212,19 @@ def input_from_algorithm(n_camera, center_small_ellip):
     landa, alpha, beta, pt = solve(dir_center_elipse_world, u_world, v_world,
                                     P0_world, c0_world)
 
+    #print("u_world", u_world)
+    #print("v_world", v_world)
+
+    print("landa alpha beta", landa,alpha, beta)
     ax.scatter(pt[0], pt[1], pt[2], c='r', marker='^')
     plot_vector(dir_center_elipse_world * landa, cam_orig_inertial,
                 style=plt_ut.arr_yellow)
 
+
     # Test start with the point generate and get the X,Y (cm)
     direction_pt_world = pt - c0_world
     direction_pt_camera = transform_inertial_to_camera(direction_pt_world)
+
 
     return pt
 
@@ -217,9 +233,46 @@ fig = plt.figure(1)
 ax = plt_ut.generate_plot(fig)
 
 # INPUT TESTING POINT
-n_world_input = Vector(0.2, 0.1, -1)
-n_camera = transform_inertial_to_camera(n_world_input)
+#n_world_input = Vector(0.2, 0.1, -1)
+
+#n_camera = transform_inertial_to_camera(n_world_input)
+
+n_camera = Vector(0.023, 0.732, 0.680)
+
+
 elipse_center_cam = Vector(cam.X_elip_cm[0], cam.Y_elip_cm[0], cam.FOCUS)
+print("elipse center camera", elipse_center_cam)
 point_world = input_from_algorithm(n_camera, elipse_center_cam)
 print(point_world)
+
+elipse_center_cam = Vector(cam.X_elip_cm[1], cam.Y_elip_cm[1], cam.FOCUS)
+print("elipse center camera", elipse_center_cam)
+point_world = input_from_algorithm(n_camera, elipse_center_cam)
+print(point_world)
+
+elipse_center_cam = Vector(cam.X_elip_cm[2], cam.Y_elip_cm[2], cam.FOCUS)
+print("elipse center camera", elipse_center_cam)
+point_world = input_from_algorithm(n_camera, elipse_center_cam)
+print(point_world)
+
+elipse_center_cam = Vector(cam.X_elip_cm[3], cam.Y_elip_cm[3], cam.FOCUS)
+print("elipse center camera", elipse_center_cam)
+point_world = input_from_algorithm(n_camera, elipse_center_cam)
+print(point_world)
+
+elipse_center_cam = Vector(cam.X_elip_cm[4], cam.Y_elip_cm[4], cam.FOCUS)
+print("elipse center camera", elipse_center_cam)
+point_world = input_from_algorithm(n_camera, elipse_center_cam)
+print(point_world)
+
+elipse_center_cam = Vector(cam.X_elip_cm[5], cam.Y_elip_cm[5], cam.FOCUS)
+print("elipse center camera", elipse_center_cam)
+point_world = input_from_algorithm(n_camera, elipse_center_cam)
+print(point_world)
+
+elipse_center_cam = Vector(cam.X_elip_cm[6], cam.Y_elip_cm[6], cam.FOCUS)
+print("elipse center camera", elipse_center_cam)
+point_world = input_from_algorithm(n_camera, elipse_center_cam)
+print(point_world)
+
 plt.show()
