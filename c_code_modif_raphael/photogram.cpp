@@ -15,7 +15,7 @@ double PHOTOGRAM_X_img_px_to_mm_and_centered(double point)
 
 double PHOTOGRAM_Y_img_px_to_mm_and_centered(double point)
 {
-    return (point - IMG_SIZE_HEIGH / 2)* PIXEL_SIZE;
+    return (point - IMG_SIZE_HEIGH / 2) * PIXEL_SIZE;
 }
 
 MatrixXd PHOTOGRAM_Point(double x,double y, double z)
@@ -266,7 +266,7 @@ MatrixXd PHOTOGRAM_input_transformations(MatrixXd &n_camera, MatrixXd &d_camera,
     PHOTOGRAM_correct_normal_vector(n_inertial);
 
     P0_inertial = PHOTOGRAM_gets_center_drawing_plane(n_inertial, E_inertial);
-
+    cout << P0_inertial << endl;
     // TERM 4,5: U,V using Gram-Schmidt
     //MatrixXd u_inertial = PHOTOGRAM_Vector(unit, 0, 0);
     //MatrixXd v_inertial = PHOTOGRAM_Vector(unit, 0, 0);
